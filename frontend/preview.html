@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EvaluaPro | Plataforma de Exámenes en Línea</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-cyan: #06b6d4;
+      --accent-indigo: #6366f1;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --gradient-brand: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: var(--bg-primary);
+      background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.15), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 600; border-radius: var(--radius-md);
+      border: none; cursor: pointer; transition: all 0.2s; text-decoration: none;
+    }
+    .btn-primary { background: var(--gradient-brand); color: #fff; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--border-subtle); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); }
+    .badge {
+      display: inline-flex; align-items: center; padding: 0.25rem 0.65rem; font-size: 0.75rem;
+      font-weight: 700; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.025em;
+    }
+    .badge-cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .input, .textarea {
+      width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md); padding: 0.7rem 1rem; color: var(--text-main);
+      font-family: inherit; font-size: 0.95rem; outline: none;
+    }
+    .input:focus, .textarea:focus { border-color: var(--accent-indigo); }
+    .timer-urgent { animation: pulse 1s infinite; color: var(--accent-rose) !important; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header style="background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle); padding: 0.75rem 2rem; position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;" onclick="app.showDashboard()">
+        <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--gradient-brand); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; color: #fff;">
+          EP
+        </div>
+        <div>
+          <div style="font-size: 1.15rem; font-weight: 700; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            EvaluaPro
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">Plataforma de Exámenes en Línea</div>
+        </div>
+      </div>
+      <div id="nav-actions" style="display: flex; align-items: center; gap: 1rem;">
+        <div style="text-align: right;">
+          <div id="user-name" style="font-size: 0.875rem; font-weight: 600;">Ana Gómez</div>
+          <div id="user-email" style="font-size: 0.75rem; color: var(--text-muted);">student@exams.com</div>
+        </div>
+        <span id="user-role-badge" class="badge badge-cyan">Estudiante</span>
+        <button class="btn btn-secondary" onclick="app.toggleRole()" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+          Cambiar a Docente
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <main id="app-root" style="flex: 1; max-width: 1200px; margin: 2rem auto; padding: 0 1rem; width: 100%;"></main>
+
+  <!-- Footer -->
+  <footer style="margin-top: auto; border-top: 1px solid var(--border-subtle); background: rgba(11, 15, 25, 0.95); padding: 1.25rem 2rem; font-size: 0.85rem; color: var(--text-dim); text-align: center;">
+    EvaluaPro © 2026 • Arquitectura .NET 8 Web API + PostgreSQL + React + Vite + Terraform + Azure Container Apps
+  </footer>
+
+  <script>
+    const app = {
+      role: 'Student',
+      view: 'student-dashboard',
+      timerInterval: null,
+      remainingSeconds: 45 * 60,
+      currentQuestionIdx: 0,
+      userAnswers: {},
+      exams: [
+        {
+          id: 'exam-1',
+          title: 'Examen Parcial: Arquitectura en la Nube y DevOps',
+          description: 'Evaluación sobre contenedores Docker multi-stage, pipelines CI/CD de GitHub Actions, escaneo SonarCloud/Snyk e IaC con Terraform.',
+          durationMinutes: 45,
+          totalQuestions: 3,
+          totalPoints: 20,
+          completed: false,
+          score: null,
+          questions: [
+            {
+              id: 'q1',
+              type: 'MultipleChoice',
+              points: 5,
+              text: '¿Cuál es el beneficio de compilar una imagen con Docker multi-stage en el pipeline de despliegue?',
+              options: [
+                { id: 'opt1', text: 'Permite reducir drásticamente el tamaño final de la imagen al descartar el SDK de compilación', correct: true },
+                { id: 'opt2', text: 'Permite ejecutar el código sin necesidad de compilar', correct: false },
+                { id: 'opt3', text: 'Reemplaza la necesidad de usar Terraform para crear recursos', correct: false }
+              ]
+            },
+            {
+              id: 'q2',
+              type: 'TrueFalse',
+              points: 5,
+              text: 'En GitHub Actions, los secretos configurados en el repositorio (ej. SONAR_TOKEN, AZURE_CLIENT_ID) son ofuscados en los logs de ejecución.',
+              options: [
+                { id: 'opt_v', text: 'Verdadero', correct: true },
+                { id: 'opt_f', text: 'Falso', correct: false }
+              ]
+            },
+            {
+              id: 'q3',
+              type: 'Open',
+              points: 10,
+              text: 'Describa cómo la combinación de SonarCloud y Semgrep previene tanto vulnerabilidades de código fuente (SAST) como security hotspots en el ciclo de vida del software.',
+              options: []
+            }
+          ]
+        },
+        {
+          id: 'exam-2',
+          title: 'Quiz Rápido: Fundamentos de C# y .NET 8 Web API',
+          description: 'Entity Framework Core, inyección de dependencias y autenticación con tokens JWT.',
+          durationMinutes: 20,
+          totalQuestions: 2,
+          totalPoints: 15,
+          completed: true,
+          score: 15,
+          questions: []
+        }
+      ],
+      toggleRole() {
+        this.role = this.role === 'Student' ? 'Teacher' : 'Student';
+        document.getElementById('user-name').textContent = this.role === 'Teacher' ? 'Prof. Carlos Mendoza' : 'Ana Gómez';
+        document.getElementById('user-email').textContent = this.role === 'Teacher' ? 'teacher@exams.com' : 'student@exams.com';
+        const badge = document.getElementById('user-role-badge');
+        badge.className = `badge ${this.role === 'Teacher' ? 'badge-purple' : 'badge-cyan'}`;
+        badge.textContent = this.role === 'Teacher' ? 'Docente' : 'Estudiante';
+        this.showDashboard();
+      },
+      showDashboard() {
+        clearInterval(this.timerInterval);
+        const root = document.getElementById('app-root');
+        if (this.role === 'Student') {
+          root.innerHTML = `
+            <div style="margin-bottom: 2rem;">
+              <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Portal del Estudiante</h1>
+              <p style="color: var(--text-muted);">Consulta tus evaluaciones activas, rinde tus exámenes con temporizador y revisa tus notas.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+              <div class="glass-card" style="padding: 1.5rem;">
+                <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Exámenes Asignados</div>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">${this.exams.length}</div>
+              </div>
+              <div class="glass-card" style="padding: 1.5rem;">
+                <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Completados</div>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #34d399; margin-top: 0.25rem;">${this.exams.filter(e => e.completed).length}</div>
+              </div>
+              <div class="glass-card" style="padding: 1.5rem;">
+                <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600;">Promedio General</div>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #c084fc; margin-top: 0.25rem;">100%</div>
+              </div>
+            </div>
+            <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1.25rem;">Exámenes Disponibles</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+              ${this.exams.map(e => `
+                <div class="glass-card" style="padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                      <span class="badge ${e.completed ? 'badge-emerald' : 'badge-amber'}">${e.completed ? 'Completado' : 'Disponible'}</span>
+                      <span style="font-size: 0.8rem; color: var(--text-dim);">⏱ ${e.durationMinutes} min</span>
+                    </div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">${e.title}</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">${e.description}</p>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem;">
+                      📝 ${e.totalQuestions} Preguntas • ${e.totalPoints} Pts Totales
+                    </div>
+                  </div>
+                  <div>
+                    ${e.completed ? `
+                      <button class="btn btn-secondary" style="width: 100%; color: #34d399; border-color: rgba(16,185,129,0.4);">
+                        Resultado: ${e.score} pts (Aprobado)
+                      </button>
+                    ` : `
+                      <button class="btn btn-primary" onclick="app.startExam('${e.id}')" style="width: 100%;">
+                        Comenzar Examen Ahora
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else {
+          /* Teacher Dashboard */
+          root.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+              <div>
+                <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.4rem;">Panel de Gestión Docente</h1>
+                <p style="color: var(--text-muted);">Administra exámenes, configura el banco de preguntas y califica respuestas.</p>
+              </div>
+              <button class="btn btn-primary" onclick="alert('Modal de creación de examen abierto (disponible en versión completa).')">
+                + Crear Nuevo Examen
+              </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+              ${this.exams.map(e => `
+                <div class="glass-card" style="padding: 1.75rem;">
+                  <span class="badge badge-purple" style="margin-bottom: 0.75rem;">Examen Activo</span>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">${e.title}</h3>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">${e.description}</p>
+                  <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="alert('Visualizando 2 entregas de estudiantes.')">Ver Entregas</button>
+                    <button class="btn btn-secondary" style="flex: 1; border-color: var(--border-accent);" onclick="alert('Asignado a Grupo 01.')">Asignar Grupo</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      },
+      startExam(examId) {
+        const exam = this.exams.find(e => e.id === examId);
+        if (!exam) return;
+        this.remainingSeconds = exam.durationMinutes * 60;
+        this.currentQuestionIdx = 0;
+        this.userAnswers = {};
+
+        this.timerInterval = setInterval(() => {
+          this.remainingSeconds--;
+          const timerEl = document.getElementById('timer-display');
+          if (timerEl) {
+            const m = Math.floor(this.remainingSeconds / 60);
+            const s = this.remainingSeconds % 60;
+            timerEl.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            if (this.remainingSeconds < 300) timerEl.classList.add('timer-urgent');
+          }
+          if (this.remainingSeconds <= 0) {
+            clearInterval(this.timerInterval);
+            alert('¡El tiempo ha finalizado! Enviando examen automáticamente...');
+            this.finishExam(examId);
+          }
+        }, 1000);
+
+        this.renderExamView(exam);
+      },
+      renderExamView(exam) {
+        const q = exam.questions[this.currentQuestionIdx];
+        const m = Math.floor(this.remainingSeconds / 60);
+        const s = this.remainingSeconds % 60;
+        const formattedTime = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+        const root = document.getElementById('app-root');
+        root.innerHTML = `
+          <div class="glass-card" style="padding: 1.25rem 2rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span class="badge badge-purple" style="margin-bottom: 0.4rem;">Examen en Vivo</span>
+              <h2 style="font-size: 1.3rem; font-weight: 700;">${exam.title}</h2>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Pregunta ${this.currentQuestionIdx + 1} de ${exam.questions.length}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+              <div style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-subtle); padding: 0.5rem 1.25rem; border-radius: var(--radius-md); text-align: center;">
+                <div style="font-size: 0.7rem; color: var(--text-dim);">TIEMPO RESTANTE</div>
+                <div id="timer-display" style="font-size: 1.5rem; font-weight: 700; color: #38bdf8; font-family: monospace;">${formattedTime}</div>
+              </div>
+              <button class="btn btn-primary" onclick="app.finishExam('${exam.id}')">Finalizar y Entregar</button>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 260px; gap: 1.5rem;">
+            <div class="glass-card" style="padding: 2rem;">
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <span class="badge badge-cyan">Pregunta #${this.currentQuestionIdx + 1}</span>
+                <span class="badge badge-emerald">${q.points} Puntos</span>
+                <span class="badge badge-purple">${q.type}</span>
+              </div>
+              <div style="font-size: 1.15rem; font-weight: 600; margin-bottom: 2rem; line-height: 1.6;">${q.text}</div>
+              <div style="margin-bottom: 2.5rem;">
+                ${q.type === 'Open' ? `
+                  <textarea class="textarea" rows="6" placeholder="Escriba su justificación técnica aquí..." oninput="app.userAnswers['${q.id}'] = this.value">${app.userAnswers[q.id] || ''}</textarea>
+                ` : `
+                  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    ${q.options.map((opt, i) => `
+                      <div onclick="app.selectOption('${q.id}', '${opt.id}', '${exam.id}')"
+                           style="padding: 1rem 1.25rem; border-radius: var(--radius-md); background: ${app.userAnswers[q.id] === opt.id ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${app.userAnswers[q.id] === opt.id ? 'var(--accent-indigo)' : 'var(--border-subtle)'}; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${app.userAnswers[q.id] === opt.id ? 'var(--accent-indigo)' : 'var(--text-dim)'}; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff;">
+                          ${String.fromCharCode(65 + i)}
+                        </div>
+                        <div>${opt.text}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="app.prevQuestion('${exam.id}')" ${this.currentQuestionIdx === 0 ? 'disabled' : ''}>← Anterior</button>
+                ${this.currentQuestionIdx < exam.questions.length - 1 ? `
+                  <button class="btn btn-primary" onclick="app.nextQuestion('${exam.id}')">Siguiente →</button>
+                ` : `
+                  <button class="btn btn-primary" style="background: var(--accent-emerald);" onclick="app.finishExam('${exam.id}')">Revisar y Entregar</button>
+                `}
+              </div>
+            </div>
+            <div class="glass-card" style="padding: 1.5rem; height: fit-content;">
+              <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Navegación</h3>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                ${exam.questions.map((item, idx) => `
+                  <button onclick="app.goToQuestion('${exam.id}', ${idx})" style="height: 40px; border-radius: var(--radius-sm); border: ${idx === this.currentQuestionIdx ? '2px solid var(--accent-cyan)' : '1px solid var(--border-subtle)'}; background: ${this.userAnswers[item.id] ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.04)'}; color: ${this.userAnswers[item.id] ? '#34d399' : '#fff'}; font-weight: 700; cursor: pointer;">
+                    ${idx + 1}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      selectOption(qId, optId, examId) {
+        this.userAnswers[qId] = optId;
+        const exam = this.exams.find(e => e.id === examId);
+        this.renderExamView(exam);
+      },
+      nextQuestion(examId) {
+        const exam = this.exams.find(e => e.id === examId);
+        if (this.currentQuestionIdx < exam.questions.length - 1) {
+          this.currentQuestionIdx++;
+          this.renderExamView(exam);
+        }
+      },
+      prevQuestion(examId) {
+        const exam = this.exams.find(e => e.id === examId);
+        if (this.currentQuestionIdx > 0) {
+          this.currentQuestionIdx--;
+          this.renderExamView(exam);
+        }
+      },
+      goToQuestion(examId, idx) {
+        const exam = this.exams.find(e => e.id === examId);
+        this.currentQuestionIdx = idx;
+        this.renderExamView(exam);
+      },
+      finishExam(examId) {
+        clearInterval(this.timerInterval);
+        const exam = this.exams.find(e => e.id === examId);
+        if (exam) {
+          exam.completed = true;
+          exam.score = 20; // Perfect score on demo
+        }
+        alert('¡Examen entregado exitosamente! Calificación automatizada registrada.');
+        this.showDashboard();
+      }
+    };
+
+    // Initialize
+    app.showDashboard();
+  </script>
+</body>
+</html>

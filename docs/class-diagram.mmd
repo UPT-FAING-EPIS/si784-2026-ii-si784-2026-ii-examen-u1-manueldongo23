@@ -1,0 +1,139 @@
+classDiagram
+    class UserRole {
+        <<enumeration>>
+        Student
+        Teacher
+        Admin
+    }
+
+    class QuestionType {
+        <<enumeration>>
+        MultipleChoice
+        TrueFalse
+        Open
+    }
+
+    class SubmissionStatus {
+        <<enumeration>>
+        InProgress
+        Submitted
+        Graded
+    }
+
+    class User {
+        +Guid Id
+        +string Name
+        +string Email
+        +string PasswordHash
+        +UserRole Role
+        +DateTime CreatedAt
+        +ICollection~GroupMember~ GroupMemberships
+        +ICollection~Exam~ CreatedExams
+        +ICollection~Submission~ Submissions
+    }
+
+    class Group {
+        +Guid Id
+        +string Name
+        +string Description
+        +DateTime CreatedAt
+        +ICollection~GroupMember~ Members
+        +ICollection~ExamAssignment~ ExamAssignments
+    }
+
+    class GroupMember {
+        +Guid Id
+        +Guid GroupId
+        +Group Group
+        +Guid UserId
+        +User User
+        +DateTime JoinedAt
+    }
+
+    class Exam {
+        +Guid Id
+        +string Title
+        +string Description
+        +int DurationMinutes
+        +DateTime StartsAt
+        +DateTime EndsAt
+        +Guid CreatedBy
+        +User Creator
+        +DateTime CreatedAt
+        +ICollection~Question~ Questions
+        +ICollection~ExamAssignment~ Assignments
+        +ICollection~Submission~ Submissions
+    }
+
+    class Question {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +QuestionType Type
+        +string Text
+        +int Points
+        +int Order
+        +ICollection~Option~ Options
+        +ICollection~Answer~ Answers
+    }
+
+    class Option {
+        +Guid Id
+        +Guid QuestionId
+        +Question Question
+        +string Text
+        +bool IsCorrect
+    }
+
+    class ExamAssignment {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +Guid? GroupId
+        +Group Group
+        +Guid? UserId
+        +User User
+        +DateTime AssignedAt
+    }
+
+    class Submission {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +Guid UserId
+        +User User
+        +DateTime StartedAt
+        +DateTime? SubmittedAt
+        +int Score
+        +SubmissionStatus Status
+        +ICollection~Answer~ Answers
+    }
+
+    class Answer {
+        +Guid Id
+        +Guid SubmissionId
+        +Submission Submission
+        +Guid QuestionId
+        +Question Question
+        +Guid? OptionId
+        +Option Option
+        +string? OpenText
+        +int? PointsAwarded
+        +string? Feedback
+    }
+
+    User --> UserRole
+    Question --> QuestionType
+    Submission --> SubmissionStatus
+
+    User "1" o-- "*" GroupMember
+    Group "1" o-- "*" GroupMember
+    User "1" o-- "*" Exam : CreatedBy
+    Exam "1" *-- "*" Question
+    Question "1" *-- "*" Option
+    Exam "1" o-- "*" ExamAssignment
+    Exam "1" o-- "*" Submission
+    User "1" o-- "*" Submission
+    Submission "1" *-- "*" Answer
+    Question "1" o-- "*" Answer
+    Option "0..1" o-- "*" Answer

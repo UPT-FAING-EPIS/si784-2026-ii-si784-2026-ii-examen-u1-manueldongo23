@@ -1,0 +1,55 @@
+name: generate-documentation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/Exams.Domain/**'
+      - 'src/Exams.Infrastructure/**'
+      - 'scripts/**'
+      - 'infra/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-generate-docs:
+    name: 'Generate Architecture & Database Documentation'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Código Fuente
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Ejecutar Generador de Documentación y Diagramas Mermaid
+        run: |
+          python scripts/gen_docs.py
+
+      - name: Verificar Integridad de los Archivos Generados
+        run: |
+          ls -la docs/
+          test -f docs/data-dictionary.md
+          test -f docs/er.mmd
+          test -f docs/classes.mmd
+          test -f docs/components.mmd
+          test -f docs/deployment.mmd
+          test -f docs/architecture.md
+          echo "Todos los diagramas Mermaid y el diccionario de datos fueron generados exitosamente."
+
+      - name: Commit y Push Automático de Documentación
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(auto): actualizar diccionario de datos y diagramas mermaid [skip ci]"
+          file_pattern: "docs/**"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"

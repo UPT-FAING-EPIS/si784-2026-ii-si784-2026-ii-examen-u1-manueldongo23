@@ -1,0 +1,69 @@
+name: infra
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Acción de Terraform a ejecutar'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - 'apply'
+          - 'plan'
+          - 'destroy'
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Cloud Provisioning'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Checkout Código Fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0
+
+      - name: Autenticar en Microsoft Azure
+        uses: azure/login@v2
+        if: env.AZURE_CLIENT_ID != ''
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -diff
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=tfplan \
+            -var="jwt_secret_key=${{ secrets.JWT_KEY || 'DefaultSecretForDevPlatformKey2026!#' }}" \
+            -var="db_admin_password=${{ secrets.DB_ADMIN_PASSWORD || 'P@ssw0rdSecure2026!' }}"
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.action == 'apply')
+        run: terraform apply -auto-approve tfplan

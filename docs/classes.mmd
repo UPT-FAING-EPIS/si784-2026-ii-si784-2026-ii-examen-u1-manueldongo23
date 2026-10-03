@@ -1,0 +1,117 @@
+classDiagram
+    direction TB
+
+    class User {
+        +Guid Id
+        +string Name
+        +string Email
+        +string PasswordHash
+        +string Role
+        +DateTime CreatedAt
+        +ICollection~Exam~ CreatedExams
+        +ICollection~Submission~ Submissions
+        +ICollection~GroupMember~ GroupMemberships
+    }
+
+    class Group {
+        +Guid Id
+        +string Name
+        +string Description
+        +DateTime CreatedAt
+        +ICollection~GroupMember~ Members
+        +ICollection~ExamAssignment~ Assignments
+    }
+
+    class GroupMember {
+        +Guid GroupId
+        +Group Group
+        +Guid UserId
+        +User User
+        +DateTime JoinedAt
+    }
+
+    class Exam {
+        +Guid Id
+        +string Title
+        +string Description
+        +int DurationMinutes
+        +DateTime StartsAt
+        +DateTime EndsAt
+        +Guid CreatedBy
+        +User Teacher
+        +ICollection~Question~ Questions
+        +ICollection~ExamAssignment~ Assignments
+        +ICollection~Submission~ Submissions
+        +bool IsActive()
+        +int GetTotalPoints()
+    }
+
+    class Question {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +string Type
+        +string Text
+        +int Points
+        +int OrderIndex
+        +ICollection~Option~ Options
+    }
+
+    class Option {
+        +Guid Id
+        +Guid QuestionId
+        +Question Question
+        +string Text
+        +bool IsCorrect
+    }
+
+    class ExamAssignment {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +Guid? GroupId
+        +Group? Group
+        +Guid? UserId
+        +User? User
+        +DateTime AssignedAt
+    }
+
+    class Submission {
+        +Guid Id
+        +Guid ExamId
+        +Exam Exam
+        +Guid UserId
+        +User Student
+        +DateTime StartedAt
+        +DateTime? SubmittedAt
+        +decimal? Score
+        +string Status
+        +ICollection~Answer~ Answers
+        +void CalculateAutoScore()
+    }
+
+    class Answer {
+        +Guid Id
+        +Guid SubmissionId
+        +Submission Submission
+        +Guid QuestionId
+        +Question Question
+        +Guid? OptionId
+        +Option? SelectedOption
+        +string? OpenText
+        +decimal? PointsAwarded
+        +string? TeacherFeedback
+    }
+
+    User "1" <-- "0..*" Exam : CreatedBy
+    User "1" <-- "0..*" Submission : SubmittedBy
+    User "1" <-- "0..*" GroupMember : Member
+    Group "1" <-- "0..*" GroupMember : Group
+    Group "0..1" <-- "0..*" ExamAssignment : AssignedToGroup
+    User "0..1" <-- "0..*" ExamAssignment : AssignedToStudent
+    Exam "1" *-- "1..*" Question : Contains
+    Question "1" *-- "0..*" Option : HasOptions
+    Exam "1" <-- "0..*" Submission : Evaluates
+    Submission "1" *-- "1..*" Answer : Answers
+    Question "1" <-- "0..*" Answer : TargetQuestion
+    Option "0..1" <-- "0..*" Answer : SelectedOption

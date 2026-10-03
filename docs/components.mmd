@@ -1,0 +1,62 @@
+flowchart TD
+    subgraph ClientLayer["Capa de Presentación (Frontend React + Vite)"]
+        UI_SPA["React Single Page Application<br/>(TypeScript + Modern CSS)"]
+        Navbar["Navbar & Role Switcher<br/>(Docente / Estudiante)"]
+        StudentDash["Student Dashboard<br/>(Exámenes asignados, notas)"]
+        TeacherDash["Teacher Dashboard<br/>(Creación, banco de reactivos, calificador)"]
+        ExamRunner["Exam Runner Engine<br/>(Temporizador estricto, paginador)"]
+        ResultsView["Results & Analytics View<br/>(Retroalimentación instantánea)"]
+    end
+
+    subgraph ApiLayer["Capa de Servicios RESTful (.NET 8 Web API)"]
+        Gateway["ASP.NET Core Kestrel Host<br/>Port 8080 (HTTPS/CORS)"]
+        AuthCtrl["AuthController<br/>(POST /api/auth/login, JWT Issuance)"]
+        ExamsCtrl["ExamsController<br/>(CRUD /exams, /exams/{id})"]
+        QuestionsCtrl["QuestionsController<br/>(CRUD /questions, /questions/{examId})"]
+        SubmissionsCtrl["SubmissionsController<br/>(POST /submissions, autoscoring)"]
+        ResultsCtrl["ResultsController<br/>(GET /results/{userId})"]
+        AuthFilter["JWT Bearer Authorization Middleware<br/>(Roles: Teacher, Student, Admin)"]
+        EfContext["Entity Framework Core 8<br/>AppDbContext (ORM & Unit of Work)"]
+    end
+
+    subgraph DataLayer["Capa de Persistencia y Seguridad"]
+        Postgres[(PostgreSQL Database Server<br/>Relational Data Store)]
+        Seeder["DbInitializer<br/>(Auto-seed de usuarios y exámenes)"]
+    end
+
+    subgraph QualityPipelines["DevOps, Seguridad y Calidad (GitHub Actions)"]
+        TerraformCI["infra.yml<br/>(Terraform IaC Azure)"]
+        SonarScan["sonar.yml<br/>(SonarCloud Quality Gate)"]
+        SecurityScan["snyk-semgrep.yml<br/>(Semgrep SAST + Snyk Container)"]
+        DeployCI["deploy.yml<br/>(CI/CD Container Registry & SWA)"]
+        DocGen["generate-documentation.yml<br/>(Mermaid Architecture Generator)"]
+    end
+
+    UI_SPA --> Navbar
+    Navbar --> StudentDash
+    Navbar --> TeacherDash
+    StudentDash --> ExamRunner
+    ExamRunner --> ResultsView
+
+    StudentDash -->|HTTP REST / JSON + Bearer Token| Gateway
+    TeacherDash -->|HTTP REST / JSON + Bearer Token| Gateway
+    ExamRunner -->|HTTP REST / JSON + Bearer Token| Gateway
+
+    Gateway --> AuthFilter
+    AuthFilter --> AuthCtrl
+    AuthFilter --> ExamsCtrl
+    AuthFilter --> QuestionsCtrl
+    AuthFilter --> SubmissionsCtrl
+    AuthFilter --> ResultsCtrl
+
+    AuthCtrl --> EfContext
+    ExamsCtrl --> EfContext
+    QuestionsCtrl --> EfContext
+    SubmissionsCtrl --> EfContext
+    ResultsCtrl --> EfContext
+
+    EfContext --> Postgres
+    Seeder --> Postgres
+
+    QualityPipelines -.->|Garantiza calidad y despliega| ApiLayer
+    QualityPipelines -.->|Aprovisiona infraestructura| DataLayer

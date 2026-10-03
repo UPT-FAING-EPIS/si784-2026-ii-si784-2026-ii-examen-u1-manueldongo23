@@ -1,0 +1,131 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+jobs:
+  build-and-test:
+    name: 'Build & Unit/Integration Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar Dependencias
+        run: dotnet restore
+
+      - name: Compilar Solución
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Ejecutar Pruebas
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+  deploy-api-container:
+    name: 'Build Container & Deploy Backend API'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Iniciar Sesión en Azure CLI (si secrets están definidos)
+        uses: azure/login@v2
+        if: env.AZURE_CLIENT_ID != ''
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Autenticación en Registro Docker (ACR o GitHub Packages)
+        run: |
+          if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ] && [ -n "${{ vars.ACR_NAME }}" ]; then
+            echo "Iniciando sesión en Azure Container Registry..."
+            az acr login --name ${{ vars.ACR_NAME }}
+            echo "REGISTRY=${{ vars.ACR_NAME }}.azurecr.io" >> $GITHUB_ENV
+          else
+            echo "Iniciando sesión en GitHub Container Registry (ghcr.io)..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "REGISTRY=ghcr.io/${{ github.repository_owner }}" >> $GITHUB_ENV
+          fi
+
+      - name: Construir y Publicar Imagen Docker
+        run: |
+          IMAGE_TAG="${{ env.REGISTRY }}/exams-api:${{ github.sha }}"
+          LATEST_TAG="${{ env.REGISTRY }}/exams-api:latest"
+          
+          docker build -t "$IMAGE_TAG" -t "$LATEST_TAG" -f src/Exams.Api/Dockerfile .
+          docker push "$IMAGE_TAG"
+          docker push "$LATEST_TAG"
+
+      - name: Actualizar Azure Container App
+        if: env.AZURE_CLIENT_ID != ''
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          az containerapp update \
+            --name ${{ vars.APP_NAME || 'ca-exams-api' }} \
+            --resource-group ${{ vars.RG_NAME || 'rg-exams-platform-prod' }} \
+            --image "${{ env.REGISTRY }}/exams-api:${{ github.sha }}"
+
+  deploy-frontend-webapp:
+    name: 'Build & Deploy React Frontend'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Instalar Dependencias Frontend
+        working-directory: frontend
+        run: npm install
+
+      - name: Compilar Frontend para Producción
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.BACKEND_API_URL || '' }}
+        run: npm run build
+
+      - name: Desplegar a Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        if: env.SWA_TOKEN != ''
+        env:
+          SWA_TOKEN: ${{ secrets.SWA_TOKEN }}
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.SWA_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: 'frontend'
+          output_location: 'dist'
+          skip_app_build: true
+
+      - name: Archivar Dist para Despliegue Manual o Alternativo (Netlify Drop / S3)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/

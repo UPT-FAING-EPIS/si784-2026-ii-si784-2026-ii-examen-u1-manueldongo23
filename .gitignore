@@ -1,0 +1,30 @@
+# Build and runtime outputs
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Node & Frontend
+node_modules/
+dist/
+.vite/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Security & Secrets
+*.sarif
+appsettings.Production.json
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.vs/
+.idea/
+.vscode/

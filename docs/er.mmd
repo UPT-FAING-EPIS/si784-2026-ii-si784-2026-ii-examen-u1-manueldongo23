@@ -1,0 +1,95 @@
+erDiagram
+    USERS ||--o{ EXAMS : "crea (Docente)"
+    USERS ||--o{ SUBMISSIONS : "presenta (Estudiante)"
+    USERS ||--o{ GROUP_MEMBERS : "pertenece"
+    USERS ||--o{ EXAM_ASSIGNMENTS : "asignado individualmente"
+
+    GROUPS ||--o{ GROUP_MEMBERS : "contiene"
+    GROUPS ||--o{ EXAM_ASSIGNMENTS : "asignado a"
+
+    EXAMS ||--|{ QUESTIONS : "contiene"
+    EXAMS ||--o{ EXAM_ASSIGNMENTS : "es asignado mediante"
+    EXAMS ||--o{ SUBMISSIONS : "recibe entregas"
+
+    QUESTIONS ||--o{ OPTIONS : "tiene alternativas"
+    QUESTIONS ||--o{ ANSWERS : "es respondida por"
+
+    SUBMISSIONS ||--|{ ANSWERS : "contiene respuestas"
+    OPTIONS ||--o{ ANSWERS : "seleccionada en"
+
+    USERS {
+        uuid Id PK
+        varchar Name
+        varchar Email UK
+        varchar PasswordHash
+        varchar Role
+        timestamp CreatedAt
+    }
+
+    GROUPS {
+        uuid Id PK
+        varchar Name
+        varchar Description
+        timestamp CreatedAt
+    }
+
+    GROUP_MEMBERS {
+        uuid GroupId PK,FK
+        uuid UserId PK,FK
+        timestamp JoinedAt
+    }
+
+    EXAMS {
+        uuid Id PK
+        varchar Title
+        varchar Description
+        int DurationMinutes
+        timestamp StartsAt
+        timestamp EndsAt
+        uuid CreatedBy FK
+        timestamp CreatedAt
+    }
+
+    QUESTIONS {
+        uuid Id PK
+        uuid ExamId FK
+        varchar Type
+        text Text
+        int Points
+        int OrderIndex
+    }
+
+    OPTIONS {
+        uuid Id PK
+        uuid QuestionId FK
+        varchar Text
+        boolean IsCorrect
+    }
+
+    EXAM_ASSIGNMENTS {
+        uuid Id PK
+        uuid ExamId FK
+        uuid GroupId FK
+        uuid UserId FK
+        timestamp AssignedAt
+    }
+
+    SUBMISSIONS {
+        uuid Id PK
+        uuid ExamId FK
+        uuid UserId FK
+        timestamp StartedAt
+        timestamp SubmittedAt
+        decimal Score
+        varchar Status
+    }
+
+    ANSWERS {
+        uuid Id PK
+        uuid SubmissionId FK
+        uuid QuestionId FK
+        uuid OptionId FK
+        text OpenText
+        decimal PointsAwarded
+        varchar TeacherFeedback
+    }
