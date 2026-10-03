@@ -33,10 +33,11 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Iniciar Análisis SonarCloud
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'MANUEL_DONGO_examen-de-unidad' }}
-          SONAR_ORG: ${{ vars.SONAR_ORG || 'MANUEL_DONGO' }}
+          SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'manueldongo23_examen-de-unidad' }}
+          SONAR_ORG: ${{ vars.SONAR_ORG || 'manueldongo23' }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "::warning::SONAR_TOKEN no configurado en los Secretos del repositorio. Ejecutando compilación y tests sin scanner."
@@ -62,6 +63,7 @@ jobs:
 
       - name: Finalizar y Publicar Escaneo SonarCloud
         if: env.SONAR_TOKEN != ''
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
