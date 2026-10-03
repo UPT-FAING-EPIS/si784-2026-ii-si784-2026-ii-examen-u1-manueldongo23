@@ -36,21 +36,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'MANUEL_DONGO_examen-de-unidad' }}
-          SONAR_ORG: ${{ vars.SONAR_ORG || '' }}
+          SONAR_ORG: ${{ vars.SONAR_ORG || 'manueldongo23' }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "::warning::SONAR_TOKEN no configurado en los Secretos del repositorio. Ejecutando compilación y tests sin scanner."
             exit 0
           fi
 
-          ORG_ARG=""
-          if [ -n "$SONAR_ORG" ]; then
-            ORG_ARG="/o:\"$SONAR_ORG\""
-          fi
-
           dotnet sonarscanner begin \
             /k:"$SONAR_PROJECT" \
-            $ORG_ARG \
+            /o:"$SONAR_ORG" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
