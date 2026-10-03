@@ -36,7 +36,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'MANUEL_DONGO_examen-de-unidad' }}
-          SONAR_ORG: ${{ vars.SONAR_ORG || 'manueldongo23' }}
+          SONAR_ORG: ${{ vars.SONAR_ORG || 'MANUEL_DONGO' }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "::warning::SONAR_TOKEN no configurado en los Secretos del repositorio. Ejecutando compilación y tests sin scanner."
