@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { StudentDashboard } from './components/StudentDashboard';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { ExamRunner } from './components/ExamRunner';
 import { ExamResultsView } from './components/ExamResultsView';
+import { LoginModal } from './components/LoginModal';
 import { User, ExamSummary, SubmissionResult, SubmissionStartedResponse, SubmitAnswerDto } from './types';
 
 // Initial Mock / Seed data for standalone immediate usability
@@ -53,6 +54,7 @@ const INITIAL_EXAMS: ExamSummary[] = [
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User>(INITIAL_STUDENT);
   const [activeTab, setActiveTab] = useState<string>('student');
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
   const [exams, setExams] = useState<ExamSummary[]>(INITIAL_EXAMS);
   const [activeExamSession, setActiveExamSession] = useState<SubmissionStartedResponse | null>(null);
   const [selectedResult, setSelectedResult] = useState<SubmissionResult | null>(null);
@@ -271,8 +273,20 @@ export const App: React.FC = () => {
     }));
   };
 
+  const handleLoginUser = (user: User) => {
+    setCurrentUser(user);
+    setActiveTab(user.role === 'Teacher' ? 'teacher' : 'student');
+    setShowLoginModal(false);
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {showLoginModal && (
+        <LoginModal
+          onLogin={handleLoginUser}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
       <Navbar
         currentUser={currentUser}
         onSwitchRole={handleSwitchRole}
@@ -282,6 +296,7 @@ export const App: React.FC = () => {
           setSelectedResult(null);
         }}
         isExamRunning={!!activeExamSession}
+        onOpenLogin={() => setShowLoginModal(true)}
       />
 
       <main style={{ flex: 1 }}>

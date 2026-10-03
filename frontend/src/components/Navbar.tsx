@@ -7,6 +7,7 @@ interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isExamRunning: boolean;
+  onOpenLogin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,7 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSwitchRole,
   activeTab,
   setActiveTab,
-  isExamRunning
+  isExamRunning,
+  onOpenLogin
 }) => {
   return (
     <header style={{
@@ -117,6 +119,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className={`badge ${currentUser?.role === 'Teacher' ? 'badge-purple' : 'badge-cyan'}`}>
                 {currentUser?.role === 'Teacher' ? 'Docente' : 'Estudiante'}
               </span>
+
+              {/* Login Modal Button */}
+              {onOpenLogin && (
+                <button
+                  className="btn btn-primary"
+                  title="Abrir formulario de Login"
+                  onClick={onOpenLogin}
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                >
+                  🔐 Iniciar Sesión
+                </button>
+              )}
 
               {/* Quick Role switcher button for demo / testing */}
               <button
