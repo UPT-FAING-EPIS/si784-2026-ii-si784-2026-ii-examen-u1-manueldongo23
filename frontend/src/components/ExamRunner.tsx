@@ -4,7 +4,7 @@ import { SubmissionStartedResponse, SubmitAnswerDto } from '../types';
 interface ExamRunnerProps {
   examData: SubmissionStartedResponse;
   onSubmit: (submissionId: string, answers: SubmitAnswerDto[]) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 export const ExamRunner: React.FC<ExamRunnerProps> = ({
